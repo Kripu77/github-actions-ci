@@ -1,0 +1,39 @@
+name: Update Manifest
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-manifest:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build and Push Docker Image
+      run: |
+        docker buildx create --use
+        docker buildx build -t your-docker-username/your-web-app:latest -f Dockerfile .
+        docker push your-docker-username/your-web-app:latest
+
+    - name: Checkout Manifest Repository
+      uses: actions/checkout@v2
+      with:
+        repository: your-docker-username/kubernetes-manifests
+        path: path/to/kubernetes-manifests
+
+    - name: Update Manifest
+      run: |
+        sed -i 's|image: your-docker-username/your-web-app:old-tag|image: your-docker-username/your-web-app:latest|' path/to/kubernetes-manifests/web-app-deployment.yaml
+        cd path/to/kubernetes-manifests
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add web-app-deployment.yaml
+        git commit -m "Update image tag to latest"
+        git push
