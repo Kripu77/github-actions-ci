@@ -16,9 +16,8 @@ jobs:
     - name: Build and Push Docker Image
       run: |
         docker buildx create --use
-        docker buildx build -t your-docker-username/your-web-app:latest -f Dockerfile .
-        docker push your-docker-username/your-web-app:latest
-
+        docker buildx build -t kripu77/github-actions-ci-test:latest -f Dockerfile .
+        docker push kripu77/github-actions-ci-test:latest
       # - name: Checkout Manifest Repository
       #   uses: actions/checkout@v2
       #   with:
