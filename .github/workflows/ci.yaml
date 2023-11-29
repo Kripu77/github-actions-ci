@@ -1,12 +1,12 @@
-name: Update Manifest
+name: Build, Push, and Update Manifest
 
 on:
   push:
     branches:
-      - main
+    - main
 
 jobs:
-  update-manifest:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,18 +22,36 @@ jobs:
         docker buildx build -t your-docker-username/your-web-app:latest -f Dockerfile .
         docker push your-docker-username/your-web-app:latest
 
-    - name: Checkout Manifest Repository
-      uses: actions/checkout@v2
-      with:
-        repository: your-docker-username/kubernetes-manifests
-        path: path/to/kubernetes-manifests
+      # - name: Checkout Manifest Repository
+      #   uses: actions/checkout@v2
+      #   with:
+      #     repository: your-docker-username/kubernetes-manifests
+      #     path: path/to/kubernetes-manifests
 
-    - name: Update Manifest
+  modifygit:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      name: changing the deployment of git repo
+      with:
+        repository: 'kripu77/helm-argocd'
+        token: ${{ secrets.GIT_PASSWORD }}
+    - name: modify the image
       run: |
-        sed -i 's|image: your-docker-username/your-web-app:old-tag|image: your-docker-username/your-web-app:latest|' path/to/kubernetes-manifests/web-app-deployment.yaml
-        cd path/to/kubernetes-manifests
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add web-app-deployment.yaml
-        git commit -m "Update image tag to latest"
-        git push
+        git config user.email ${{ secrets.GIT_EMAIL }}
+        git config user.name ${{ secrets.GIT_USERNAME }}}
+        pwd
+        cd helm-chart
+        pwd
+        cat values.yaml
+        pwd
+        sed -i '/^app:/,/tag:/ s/tag:.*/tag: app-$RUN_NUMBER/' values.yaml
+        cat values.yaml
+        git add .
+        git commit -m 'Done  by Github Actions   Job changemanifest: ${{ github.run_number }}'
+        git push origin main
+      env:
+        GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
+        GIT_PASSWORD: ${{ secrets.GIT_PASSWORD }}
+        RUN_NUMBER: ${{ github.run_number }}
