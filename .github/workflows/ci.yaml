@@ -8,14 +8,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
-
     - name: Build and Push Docker Image
       run: |
         docker buildx create --use
@@ -27,9 +24,8 @@ jobs:
       #   with:
       #     repository: your-docker-username/kubernetes-manifests
       #     path: path/to/kubernetes-manifests
-
   modifygit:
-    needs: docker
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
